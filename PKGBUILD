@@ -20,6 +20,7 @@ package() {
   cd ..
   #install -Dm 755 target/release/${pkgname} -t "${pkgdir}/usr/bin"
   install -Dm 755 target/debug/${pkgname} -t "${pkgdir}/usr/bin"
+  install -Dm 644 icons/*.svg -t "${pkgdir}/usr/share/arch-audit-gtk/icons"
   install -Dm 644 contrib/arch-audit-gtk.tmpfiles "${pkgdir}/usr/lib/tmpfiles.d/arch-audit-gtk.conf"
   install -Dm 644 contrib/arch-audit-gtk.hook "${pkgdir}/usr/share/libalpm/hooks/arch-audit-gtk.hook"
   install -Dm 644 contrib/arch-audit-gtk.desktop -t "${pkgdir}/etc/xdg/autostart"

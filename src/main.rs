@@ -2,7 +2,6 @@ use anyhow::{anyhow, bail, Result, Context};
 use inotify::{Inotify, WatchMask};
 use std::borrow::Cow;
 use log::{info, debug};
-use std::env;
 use std::fs::File;
 use std::path::Path;
 use std::sync::mpsc;
@@ -108,8 +107,12 @@ fn gtk_main() -> Result<()> {
 
     indicator.set_status(AppIndicatorStatus::Active);
 
-    let icon_path = Path::new(env!("CARGO_MANIFEST_DIR")).join("icons");
-    indicator.set_icon_theme_path(icon_path.to_str().unwrap());
+    for path in &["./icons", "/usr/share/arch-audit-gtk/icons"] {
+        let icon = Path::new(path).join("check.svg");
+        if icon.exists() {
+            indicator.set_icon_theme_path(path);
+        }
+    }
     indicator.set_icon_full("check", "icon"); // TODO: should indicate we're still fetching the status
 
     let mut m = gtk::Menu::new();
