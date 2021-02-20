@@ -1,7 +1,10 @@
 [package]
 name = "arch-audit-gtk"
 version = "0.1.0"
-authors = ["user"]
+description = "Arch Linux Security Update Notifications"
+authors = ["kpcyrd <git@rxv.cc>"]
+license = "GPL-3.0"
+repository = "https://github.com/kpcyrd/arch-audit-gtk"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

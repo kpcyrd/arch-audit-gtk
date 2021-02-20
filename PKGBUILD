@@ -7,8 +7,8 @@ pkgdesc='Arch Linux Security Update Notifications'
 url='https://github.com/kpcyrd/arch-audit-gtk'
 arch=('x86_64')
 license=('GPL3')
-depends=('arch-audit')
-makedepends=('cargo')
+depends=('arch-audit' 'libappindicator-gtk3')
+makedepends=('cargo' 'clang' 'llvm')
 
 build() {
   cd ..
