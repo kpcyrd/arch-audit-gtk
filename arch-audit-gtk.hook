@@ -1,0 +1,15 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Notifying arch-audit-gtk
+Depends = curl
+Depends = openssl
+Depends = arch-audit
+Depends = arch-audit-gtk
+When = PostTransaction
+Exec = /usr/bin/arch-audit-gtk --pacman-notify
