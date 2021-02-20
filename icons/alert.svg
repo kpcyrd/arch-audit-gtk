@@ -1,0 +1,12 @@
+<svg width="600" height="600" xmlns="http://www.w3.org/2000/svg">
+ <g>
+  <title>background</title>
+  <rect x="-1" y="-1" width="602" height="602" id="canvas_background" fill="none"/>
+ </g>
+
+ <g>
+  <title>Layer 1</title>
+  <rect id="svg_6" height="336" width="134" y="209" x="238.5" opacity="undefined" stroke-opacity="null" stroke-dasharray="null" stroke-width="0" stroke="#000" fill="#000000"/>
+  <path stroke="#000" id="svg_5" d="m562.02696,488.40617l-73.68742,-137.96094c-22.21648,-41.58106 -58.55459,-109.65257 -80.77121,-151.24168l-73.68053,-137.95256c-22.23853,-41.60546 -58.57662,-41.60546 -80.78573,0l-73.66561,137.95256c-22.21648,41.58911 -58.57673,109.67646 -80.78588,151.24168l-73.67311,137.96094c-22.21644,41.62118 -4.0325,75.64078 40.39303,75.64078l456.21937,0c44.4699,0 62.63132,-34.01962 40.43706,-75.64078l0.00002,0zm-247.49107,21.35742l-43.70379,0l0,-45.36176l43.70379,0l0,45.36176zm-2.10555,-78.78606l-39.45539,0l-3.92105,-194.08625l46.94762,0l-3.57115,194.08625l-0.00002,0z" opacity="undefined" stroke-opacity="null" stroke-dasharray="null" stroke-width="0" fill="#ffff00"/>
+ </g>
+</svg>
