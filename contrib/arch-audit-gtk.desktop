@@ -1,0 +1,5 @@
+[Desktop Entry]
+Type=Application
+Name=Arch Linux Security Update Notifications
+Comment=Display your current patch status
+Exec=/usr/bin/arch-audit-gtk
