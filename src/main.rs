@@ -1,7 +1,7 @@
 use anyhow::{anyhow, bail, Result, Context};
 use inotify::{Inotify, WatchMask};
 use std::borrow::Cow;
-use log::{info, debug};
+use log::{warn, info, debug};
 use std::fs::File;
 use std::path::Path;
 use std::sync::mpsc;
@@ -29,31 +29,41 @@ struct Args {
 }
 
 #[derive(Debug)]
+pub struct Update {
+    text: String,
+}
+
+#[derive(Debug)]
 enum Status {
-    MissingUpdates(usize),
+    MissingUpdates(Vec<Update>),
     Error(String),
 }
 
 impl Status {
     fn text(&self) -> Cow<'_, str> {
         match self {
-            Status::MissingUpdates(0) => Cow::Borrowed("No missing security updates"),
-            Status::MissingUpdates(1) => Cow::Borrowed("1 missing security update"),
-            Status::MissingUpdates(n) => Cow::Owned(format!("{} missing security updates", n)),
+            Status::MissingUpdates(list) => match list.len() {
+                0 => Cow::Borrowed("No missing security updates"),
+                1 => Cow::Borrowed("1 missing security update"),
+                n => Cow::Owned(format!("{} missing security updates", n)),
+            },
             Status::Error(err) => Cow::Owned(format!("ERROR: {}", err))
         }
     }
 
     fn icon(&self) -> &'static str {
         match self {
-            Status::MissingUpdates(0) => "check",
-            Status::MissingUpdates(_) => "alert",
+            Status::MissingUpdates(list) => if list.is_empty() {
+                "check"
+            } else {
+                "alert"
+            },
             Status::Error(_) => "cross",
         }
     }
 }
 
-fn update() -> Result<usize> {
+fn update() -> Result<Vec<Update>> {
     let output = Command::new("arch-audit")
         .args(&["-u"])
         .output()
@@ -62,14 +72,20 @@ fn update() -> Result<usize> {
     info!("arch-audit exited: {}", output.status);
 
     if output.status.success() {
-        if output.stdout.is_empty() {
-            Ok(0)
-        } else {
-            let output = String::from_utf8_lossy(&output.stdout);
-            let output = output.trim().split('\n').collect::<Vec<_>>();
+        let output = String::from_utf8_lossy(&output.stdout);
+        let updates = output.trim()
+            .split('\n')
+            .filter(|x| !x.is_empty())
+            .map(|line| Update {
+                text: line.to_string(),
+            })
+            .collect::<Vec<_>>();
+
+        if !updates.is_empty() {
             info!("Missing security updates: {:?}", output);
-            Ok(output.len())
         }
+
+        Ok(updates)
     } else {
         let err = String::from_utf8_lossy(&output.stderr);
         let err = err.trim();
@@ -140,8 +156,27 @@ fn gtk_main() -> Result<()> {
     result_rx.attach(None, move |msg| {
         log::info!("Received from thread: {:?}", msg);
 
+        // update text in main menu
         checking_mi.set_label(CHECK_FOR_UPDATE);
         status_mi.set_label(&msg.text());
+
+        match msg {
+            Status::MissingUpdates(ref updates) if !updates.is_empty() => {
+                let m = gtk::Menu::new();
+
+                for update in updates {
+                    let mi = gtk::MenuItem::with_label(&update.text);
+                    m.append(&mi);
+                }
+
+                m.show_all();
+                status_mi.set_submenu(Some(&m));
+            },
+            _ => {
+                status_mi.set_submenu(None::<&gtk::Menu>);
+            }
+        }
+
         indicator.set_icon_full(msg.icon(), "icon");
 
         glib::Continue(true)
@@ -164,28 +199,31 @@ fn setup_inotify_thread(tx: mpsc::Sender<()>) -> Result<()> {
         .context("Failed to init inotify")?;
 
     // Watch for modify and close events.
-    inotify
+    let result = inotify
         .add_watch(
             "/run/arch-audit-gtk",
             WatchMask::CLOSE_WRITE,
-        )
-    .context("Failed to add file watch")?;
+        );
 
-    thread::spawn(move || {
-        // Read events that were added with `add_watch` above.
-        let mut buffer = [0; 1024];
+    if let Err(err) = result {
+        warn!("Failed to add file watch: {:#}", err);
+    } else {
+        thread::spawn(move || {
+            // Read events that were added with `add_watch` above.
+            let mut buffer = [0; 1024];
 
-        loop {
-            let events = inotify.read_events_blocking(&mut buffer)
-                .expect("Error while reading events");
+            loop {
+                let events = inotify.read_events_blocking(&mut buffer)
+                    .expect("Error while reading events");
 
-            // we don't need to send multiple signals, one is enough
-            debug!("Received events: {:?}", events.collect::<Vec<_>>());
-            if tx.send(()).is_err() {
-                break;
+                // we don't need to send multiple signals, one is enough
+                debug!("Received events: {:?}", events.collect::<Vec<_>>());
+                if tx.send(()).is_err() {
+                    break;
+                }
             }
-        }
-    });
+        });
+    }
 
     Ok(())
 }
