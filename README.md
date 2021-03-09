@@ -7,9 +7,7 @@ system.
 
 ## Install
 
-    git clone https://aur.archlinux.org/arch-audit-gtk.git
-    cd arch-audit-gtk
-    makepkg -si
+    pacman -S arch-audit-gtk
 
 ## Gnome3
 
