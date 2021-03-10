@@ -150,7 +150,7 @@ fn gtk_main() -> Result<()> {
         update_tx.send(()).unwrap();
     });
 
-    let status_mi = gtk::MenuItem::with_label(&format!("Starting..."));
+    let status_mi = gtk::MenuItem::with_label("Starting...");
     m.append(&status_mi);
 
     let mi = gtk::MenuItem::with_label(QUIT);
@@ -260,13 +260,4 @@ fn main() -> Result<()> {
     } else {
         gtk_main()
     }
-}
-
-#[cfg(test)]
-mod tests { 
-  use super::*;
-
-  #[test]
-  fn test() {
-  }
 }
