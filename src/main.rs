@@ -2,6 +2,7 @@ use anyhow::{anyhow, bail, Result, Context};
 use inotify::{Inotify, WatchMask};
 use std::borrow::Cow;
 use log::{warn, info, debug};
+use std::env;
 use std::fs::File;
 use std::path::Path;
 use std::sync::mpsc;
@@ -63,15 +64,23 @@ impl Status {
     }
 }
 
-fn update() -> Result<Vec<Update>> {
-    let output = Command::new("arch-audit")
-        .args(&["-u"])
+fn check_updates() -> Result<Vec<Update>> {
+    // Select the arch-audit binary
+    let bin = env::var("ARCH_AUDIT_BIN");
+    let bin = bin.as_ref()
+        .map(|x| x.as_str())
+        .unwrap_or("arch-audit");
+
+    // Run the arch-audit binary
+    let output = Command::new(bin)
+        .args(&["-u", "--format", "%s: %n (%t)"])
         .output()
         .context("Failed to run arch-audit")?;
 
     info!("arch-audit exited: {}", output.status);
 
     if output.status.success() {
+        // if arch-audit didn't indicate an error, read the update list into lines
         let output = String::from_utf8_lossy(&output.stdout);
         let updates = output.trim()
             .split('\n')
@@ -96,7 +105,7 @@ fn update() -> Result<Vec<Update>> {
 fn background(update_rx: mpsc::Receiver<()>, result_tx: glib::Sender<Status>) {
     loop {
         info!("Checking for security updates...");
-        let msg = update()
+        let msg = check_updates()
             .map(Status::MissingUpdates)
             .unwrap_or_else(|e| Status::Error(format!("{:#}", e)));
         result_tx.send(msg).ok();
@@ -141,7 +150,7 @@ fn gtk_main() -> Result<()> {
         update_tx.send(()).unwrap();
     });
 
-    let status_mi = gtk::MenuItem::with_label(&format!("Starting..."));
+    let status_mi = gtk::MenuItem::with_label("Starting...");
     m.append(&status_mi);
 
     let mi = gtk::MenuItem::with_label(QUIT);
@@ -251,13 +260,4 @@ fn main() -> Result<()> {
     } else {
         gtk_main()
     }
-}
-
-#[cfg(test)]
-mod tests { 
-  use super::*;
-
-  #[test]
-  fn test() {
-  }
 }
