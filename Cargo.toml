@@ -1,6 +1,6 @@
 [package]
 name = "arch-audit-gtk"
-version = "0.1.1"
+version = "0.1.2"
 description = "Arch Linux Security Update Notifications"
 authors = ["kpcyrd <git@rxv.cc>"]
 license = "GPL-3.0"
