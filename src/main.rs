@@ -221,6 +221,12 @@ fn gtk_main() -> Result<()> {
                 for update in updates {
                     let mi = gtk::MenuItem::with_label(&update.text);
                     m.append(&mi);
+                    let link = update.link.to_string();
+                    mi.connect_activate(move |_| {
+                        if let Err(err) = opener::open(&link) {
+                            eprintln!("Failed to open link: {:#}", err);
+                        }
+                    });
                 }
 
                 m.show_all();
