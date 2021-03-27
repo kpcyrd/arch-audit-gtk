@@ -9,6 +9,8 @@ system.
 
     pacman -S arch-audit-gtk
 
+The package contains files for xdg-autostart, so it should automatically start the next time you log in. This is the case for gnome and kde, for i3 you need something like [`dex -a`](https://archlinux.org/packages/community/any/dex/) or execute `arch-audit-gtk` directly.
+
 ## Gnome3
 
 For gnome3 you need to install an extension for app indicator support:
