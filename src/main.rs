@@ -2,6 +2,7 @@ use anyhow::{anyhow, bail, Result, Context};
 use inotify::{Inotify, WatchMask};
 use std::borrow::Cow;
 use log::{warn, info, debug};
+use rand::Rng;
 use std::env;
 use std::fs::File;
 use std::path::Path;
@@ -19,7 +20,8 @@ const QUIT: &str = "Quit";
 
 // TODO: there should be a startup delay so we check after eg 5min
 // TODO: we should check how long ago the last update check was
-const CHECK_INTERVAL: u64 = 3600 * 6;
+const CHECK_INTERVAL: u64 = 3600 * 2; // 2 hours
+const CHECK_JITTER: u64 = 3600 * 4; // 4 hours
 
 #[derive(Debug, StructOpt)]
 struct Args {
@@ -111,7 +113,10 @@ fn background(update_rx: mpsc::Receiver<()>, result_tx: glib::Sender<Status>) {
         result_tx.send(msg).ok();
         info!("Finished checking for security updates");
 
-        let _ = update_rx.recv_timeout(Duration::from_secs(CHECK_INTERVAL));
+        let mut rng = rand::thread_rng();
+        let jitter = rng.gen_range(0..CHECK_JITTER);
+        let delay = Duration::from_secs(CHECK_INTERVAL + jitter);
+        let _ = update_rx.recv_timeout(delay);
     }
 }
 
