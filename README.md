@@ -11,9 +11,11 @@ system.
 
 ## Gnome3
 
-On gnome3 you need to install and enable an
-[extension](https://extensions.gnome.org/extension/615/appindicator-support/)
-for AppIndicator to work.
+For gnome3 you need to install an extension for app indicator support:
+
+    pacman -S gnome-shell-extension-appindicator
+
+After installing this exntesion you need to restart your desktop so gnome picks it up, you then need to enable the extension with the gnome extension manager.
 
 ## Development
 
