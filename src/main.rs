@@ -1,4 +1,8 @@
+mod args;
+
 use anyhow::{anyhow, bail, Result, Context};
+use crate::args::Args;
+use env_logger::Env;
 use inotify::{Inotify, WatchMask};
 use std::borrow::Cow;
 use log::{warn, info, debug};
@@ -22,14 +26,6 @@ const QUIT: &str = "Quit";
 // TODO: we should check how long ago the last update check was
 const CHECK_INTERVAL: u64 = 3600 * 2; // 2 hours
 const CHECK_JITTER: u64 = 3600 * 4; // 4 hours
-
-#[derive(Debug, StructOpt)]
-struct Args {
-    #[structopt(long)]
-    pacman_notify: bool,
-    #[structopt(long)]
-    debug_inotify: bool,
-}
 
 #[derive(Debug)]
 pub struct Update {
@@ -116,6 +112,7 @@ fn background(update_rx: mpsc::Receiver<()>, result_tx: glib::Sender<Status>) {
         let mut rng = rand::thread_rng();
         let jitter = rng.gen_range(0..CHECK_JITTER);
         let delay = Duration::from_secs(CHECK_INTERVAL + jitter);
+        info!("Sleeping for {}", humantime::format_duration(delay));
         let _ = update_rx.recv_timeout(delay);
     }
 }
@@ -254,9 +251,10 @@ fn debug_inotify_main() -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    env_logger::init();
-
     let args = Args::from_args();
+
+    env_logger::init_from_env(Env::default()
+        .default_filter_or(args.log_level()));
 
     if args.pacman_notify {
         pacman_notify_main()

@@ -32,6 +32,7 @@ dependencies = [
  "env_logger 0.8.3",
  "glib",
  "gtk",
+ "humantime 2.1.0",
  "inotify",
  "libappindicator",
  "log",
