@@ -1,13 +1,18 @@
+mod args;
+
 use anyhow::{anyhow, bail, Result, Context};
+use crate::args::Args;
+use env_logger::Env;
 use inotify::{Inotify, WatchMask};
 use std::borrow::Cow;
 use log::{warn, info, debug};
+use rand::Rng;
 use std::env;
 use std::fs::File;
 use std::path::Path;
 use std::sync::mpsc;
 use std::thread;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use std::process::Command;
 use structopt::StructOpt;
 use gtk::prelude::*;
@@ -19,15 +24,8 @@ const QUIT: &str = "Quit";
 
 // TODO: there should be a startup delay so we check after eg 5min
 // TODO: we should check how long ago the last update check was
-const CHECK_INTERVAL: u64 = 3600 * 6;
-
-#[derive(Debug, StructOpt)]
-struct Args {
-    #[structopt(long)]
-    pacman_notify: bool,
-    #[structopt(long)]
-    debug_inotify: bool,
-}
+const CHECK_INTERVAL: u64 = 3600 * 2; // 2 hours
+const CHECK_JITTER: u64 = 3600 * 4; // 4 hours
 
 #[derive(Debug)]
 pub struct Update {
@@ -62,6 +60,12 @@ impl Status {
             Status::Error(_) => "cross",
         }
     }
+}
+
+#[derive(Debug)]
+enum Event {
+    Click,
+    Inotify,
 }
 
 fn check_updates() -> Result<Vec<Update>> {
@@ -102,16 +106,40 @@ fn check_updates() -> Result<Vec<Update>> {
     }
 }
 
-fn background(update_rx: mpsc::Receiver<()>, result_tx: glib::Sender<Status>) {
+fn background(update_rx: mpsc::Receiver<Event>, result_tx: glib::Sender<Status>) {
     loop {
         info!("Checking for security updates...");
-        let msg = check_updates()
-            .map(Status::MissingUpdates)
-            .unwrap_or_else(|e| Status::Error(format!("{:#}", e)));
+        let arch_audit_result = check_updates();
+        let (needs_updates, msg) = match arch_audit_result {
+            Ok(updates) => (!updates.is_empty(), Status::MissingUpdates(updates)),
+            Err(e) => (true, Status::Error(format!("{:#}", e))),
+        };
         result_tx.send(msg).ok();
         info!("Finished checking for security updates");
 
-        let _ = update_rx.recv_timeout(Duration::from_secs(CHECK_INTERVAL));
+        let mut rng = rand::thread_rng();
+        let jitter = rng.gen_range(0..CHECK_JITTER);
+        let delay = Duration::from_secs(CHECK_INTERVAL + jitter);
+
+        let start = Instant::now();
+        while let Some(remaining) = delay.checked_sub(start.elapsed()) {
+            info!("Sleeping for {}", humantime::format_duration(remaining));
+            if let Ok(event) = update_rx.recv_timeout(remaining) {
+                debug!("Received event: {:?}", event);
+                match event {
+                    Event::Click => break,
+                    Event::Inotify => {
+                        if needs_updates {
+                            break;
+                        } else {
+                            info!("There are no missing security updates so we aren't checking if we're missing any");
+                        }
+                    },
+                }
+            } else {
+                break;
+            }
+        }
     }
 }
 
@@ -147,7 +175,7 @@ fn gtk_main() -> Result<()> {
     let mi = checking_mi.clone();
     checking_mi.connect_activate(move |_| {
         mi.set_label(CHECKING);
-        update_tx.send(()).unwrap();
+        update_tx.send(Event::Click).unwrap();
     });
 
     let status_mi = gtk::MenuItem::with_label("Starting...");
@@ -203,7 +231,7 @@ fn pacman_notify_main() -> Result<()> {
     Ok(())
 }
 
-fn setup_inotify_thread(tx: mpsc::Sender<()>) -> Result<()> {
+fn setup_inotify_thread(tx: mpsc::Sender<Event>) -> Result<()> {
     let mut inotify = Inotify::init()
         .context("Failed to init inotify")?;
 
@@ -227,7 +255,7 @@ fn setup_inotify_thread(tx: mpsc::Sender<()>) -> Result<()> {
 
                 // we don't need to send multiple signals, one is enough
                 debug!("Received events: {:?}", events.collect::<Vec<_>>());
-                if tx.send(()).is_err() {
+                if tx.send(Event::Inotify).is_err() {
                     break;
                 }
             }
@@ -249,9 +277,10 @@ fn debug_inotify_main() -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    env_logger::init();
-
     let args = Args::from_args();
+
+    env_logger::init_from_env(Env::default()
+        .default_filter_or(args.log_level()));
 
     if args.pacman_notify {
         pacman_notify_main()
