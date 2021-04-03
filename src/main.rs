@@ -1,6 +1,7 @@
 mod args;
 
 use anyhow::{anyhow, bail, Result, Context};
+use arch_audit::types::{Avg, Severity};
 use crate::args::Args;
 use env_logger::Env;
 use inotify::{Inotify, WatchMask};
@@ -29,7 +30,10 @@ const CHECK_JITTER: u64 = 3600 * 4; // 4 hours
 
 #[derive(Debug)]
 pub struct Update {
+    severity: Severity,
+    pkg: String,
     text: String,
+    link: String,
 }
 
 #[derive(Debug)]
@@ -77,22 +81,35 @@ fn check_updates() -> Result<Vec<Update>> {
 
     // Run the arch-audit binary
     let output = Command::new(bin)
-        .args(&["-u", "--format", "%s: %n (%t)"])
+        .args(&["-u", "--json"])
         .output()
         .context("Failed to run arch-audit")?;
 
     info!("arch-audit exited: {}", output.status);
 
     if output.status.success() {
-        // if arch-audit didn't indicate an error, read the update list into lines
-        let output = String::from_utf8_lossy(&output.stdout);
-        let updates = output.trim()
-            .split('\n')
-            .filter(|x| !x.is_empty())
-            .map(|line| Update {
-                text: line.to_string(),
+        // if arch-audit didn't indicate an error, parse the output as json
+        let affected: Vec<Avg> = serde_json::from_slice(&output.stdout)
+            .context("Failed to parse arch-audit json output")?;
+
+        let mut updates = affected.into_iter()
+            .flat_map(|avg| {
+                avg.packages.iter().map(|pkg| {
+                    let text = format!("{}: {} ({})", avg.severity, pkg, avg.kind);
+                    Update {
+                        severity: avg.severity,
+                        pkg: pkg.to_string(),
+                        text,
+                        link: format!("https://security.archlinux.org/{}", avg.name),
+                    }
+                }).collect::<Vec<_>>()
             })
             .collect::<Vec<_>>();
+
+        updates.sort_by(|a, b| {
+            a.severity.cmp(&b.severity).reverse()
+            .then(a.pkg.cmp(&b.pkg))
+        });
 
         if !updates.is_empty() {
             info!("Missing security updates: {:?}", output);
@@ -204,6 +221,12 @@ fn gtk_main() -> Result<()> {
                 for update in updates {
                     let mi = gtk::MenuItem::with_label(&update.text);
                     m.append(&mi);
+                    let link = update.link.to_string();
+                    mi.connect_activate(move |_| {
+                        if let Err(err) = opener::open(&link) {
+                            eprintln!("Failed to open link: {:#}", err);
+                        }
+                    });
                 }
 
                 m.show_all();
