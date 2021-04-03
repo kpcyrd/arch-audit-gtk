@@ -11,7 +11,7 @@ edition = "2018"
 
 [dependencies]
 anyhow = "1.0.38"
-arch-audit = { git = "https://gitlab.com/ilpianista/arch-audit" }
+arch-audit = "0.1.19"
 env_logger = "0.8.3"
 glib = "0.10.1"
 gtk = "0.9.0"
