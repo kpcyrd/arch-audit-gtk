@@ -88,7 +88,7 @@ dependencies = [
 
 [[package]]
 name = "arch-audit-gtk"
-version = "0.1.2"
+version = "0.2.0"
 dependencies = [
  "anyhow",
  "arch-audit",
