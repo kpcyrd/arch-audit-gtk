@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   inkscape:version="1.0 (4035a4fb49, 2020-05-01)"
+   sodipodi:docname="shield.svg"
+   id="svg13"
+   version="1.1"
+   height="600"
+   width="600">
+  <metadata
+     id="metadata19">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs17" />
+  <sodipodi:namedview
+     inkscape:guide-bbox="true"
+     showguides="true"
+     inkscape:document-rotation="0"
+     inkscape:current-layer="svg13"
+     inkscape:window-maximized="1"
+     inkscape:window-y="-8"
+     inkscape:window-x="-8"
+     inkscape:cy="326.70907"
+     inkscape:cx="401.77837"
+     inkscape:zoom="1.4666667"
+     showgrid="false"
+     id="namedview15"
+     inkscape:window-height="1377"
+     inkscape:window-width="3440"
+     inkscape:pageshadow="2"
+     inkscape:pageopacity="1"
+     guidetolerance="10"
+     gridtolerance="10"
+     objecttolerance="10"
+     borderopacity="1"
+     bordercolor="#666666"
+     pagecolor="#ffffff"
+     inkscape:pagecheckerboard="true" />
+  <g
+     id="g5">
+    <title
+       id="title2">background</title>
+    <rect
+       fill="none"
+       id="canvas_background"
+       height="602"
+       width="602"
+       y="-1"
+       x="-1" />
+  </g>
+  <path
+     sodipodi:nodetypes="ccsczc"
+     id="path836"
+     d="M 72.954546,21.136364 H 529.09091 V 273.40909 c 0,113.56853 -228.06818,304.09091 -228.06818,304.09091 0,0 -228.068184,-171.13636 -228.068184,-304.09091 z"
+     style="fill:#202020;fill-rule:evenodd;stroke:#ffffff;stroke-width:30;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;fill-opacity:1" />
+  <text
+     id="text835"
+     y="295.22726"
+     x="639.54541"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:26.6667px;line-height:125%;font-family:'DejaVu Sans';-inkscape-font-specification:'DejaVu Sans';letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     xml:space="preserve"><tspan
+       y="295.22726"
+       x="639.54541"
+       id="tspan833"
+       sodipodi:role="line">Color Palett:</tspan><tspan
+       id="tspan849"
+       y="328.56064"
+       x="639.54541"
+       sodipodi:role="line">B/W Icons:</tspan><tspan
+       id="tspan837"
+       y="361.89401"
+       x="639.54541"
+       sodipodi:role="line">Outlines: #202020</tspan><tspan
+       id="tspan839"
+       y="395.22739"
+       x="639.54541"
+       sodipodi:role="line">Fill color: #ffffff</tspan><tspan
+       id="tspan841"
+       y="428.56076"
+       x="639.54541"
+       sodipodi:role="line"></tspan><tspan
+       id="tspan851"
+       y="461.89413"
+       x="639.54541"
+       sodipodi:role="line">Color Icons:</tspan><tspan
+       id="tspan853"
+       y="495.22751"
+       x="639.54541"
+       sodipodi:role="line">Outlines: #202020</tspan><tspan
+       id="tspan847"
+       y="528.56091"
+       x="639.54541"
+       sodipodi:role="line">Fill red: #cd0000</tspan><tspan
+       id="tspan843"
+       y="561.89429"
+       x="639.54541"
+       sodipodi:role="line">Fill green: #00cd00</tspan><tspan
+       id="tspan845"
+       y="595.22766"
+       x="639.54541"
+       sodipodi:role="line">Fill yellow: #cdcd00</tspan></text>
+</svg>
