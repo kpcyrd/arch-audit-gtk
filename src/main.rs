@@ -160,7 +160,7 @@ fn background(update_rx: mpsc::Receiver<Event>, result_tx: glib::Sender<Status>)
     }
 }
 
-fn gtk_main() -> Result<()> {
+fn gtk_main(args: Args) -> Result<()> {
     gtk::init()?;
 
     // TODO: consider a mutex and condvar so we don't queue multiple updates
@@ -177,10 +177,15 @@ fn gtk_main() -> Result<()> {
 
     indicator.set_status(AppIndicatorStatus::Active);
 
-    for path in &["./icons", "/usr/share/arch-audit-gtk/icons"] {
-        let icon = Path::new(path).join("check.svg");
-        if icon.exists() {
-            indicator.set_icon_theme_path(path);
+    'outer: for path in &["./icons", "/usr/share/arch-audit-gtk/icons"] {
+        for theme in &[&args.icon_theme, "default"] {
+            if let Ok(theme_path) = Path::new(path).join(theme).canonicalize() {
+                let icon = theme_path.join("check.svg");
+                if icon.exists() {
+                    indicator.set_icon_theme_path(theme_path.to_str().unwrap());
+                    break 'outer;
+                }
+            }
         }
     }
     indicator.set_icon_full("check", "icon"); // TODO: should indicate we're still fetching the status
@@ -305,11 +310,18 @@ fn main() -> Result<()> {
     env_logger::init_from_env(Env::default()
         .default_filter_or(args.log_level()));
 
+    // Ensure the theme name can not be exploited for path traversal or
+    // other havoc. After this point icon_theme is safe to be used within
+    // a path.
+    if args.icon_theme.contains(|ch| !('a'..='z').contains(&ch)) {
+        panic!("Invalid theme name. Only characters a to z are allowed.");
+    }
+
     if args.pacman_notify {
         pacman_notify_main()
     } else if args.debug_inotify {
         debug_inotify_main()
     } else {
-        gtk_main()
+        gtk_main(args)
     }
 }
