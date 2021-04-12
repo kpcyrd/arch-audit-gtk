@@ -1,15 +1,19 @@
+use crate::Icon;
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
 pub struct Args {
     #[structopt(short, long, parse(from_occurrences))]
     pub verbose: u8,
-    #[structopt(long)]
+    #[structopt(long, group = "action")]
     pub pacman_notify: bool,
-    #[structopt(long)]
+    #[structopt(long, group = "action")]
     pub debug_inotify: bool,
+    /// Show a specific icon to debug your design
+    #[structopt(long, group = "action")]
+    pub debug_icon: Option<Icon>,
     /// Name of the icon theme
-    #[structopt(long, default_value="default")]
+    #[structopt(long, default_value = "default")]
     pub icon_theme: String,
 }
 
