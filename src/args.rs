@@ -8,6 +8,9 @@ pub struct Args {
     pub pacman_notify: bool,
     #[structopt(long)]
     pub debug_inotify: bool,
+    /// Name of the icon theme
+    #[structopt(long, default_value="default")]
+    pub icon_theme: String,
 }
 
 impl Args {
