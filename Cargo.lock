@@ -92,6 +92,7 @@ version = "0.2.0"
 dependencies = [
  "anyhow",
  "arch-audit",
+ "dirs-next",
  "env_logger 0.8.3",
  "glib",
  "gtk",
@@ -101,8 +102,10 @@ dependencies = [
  "log",
  "opener",
  "rand",
+ "serde",
  "serde_json",
  "structopt",
+ "toml",
 ]
 
 [[package]]

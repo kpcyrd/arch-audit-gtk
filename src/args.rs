@@ -1,4 +1,4 @@
-use crate::Icon;
+use crate::gui::{Icon, Theme};
 use structopt::StructOpt;
 
 #[derive(Debug, StructOpt)]
@@ -13,8 +13,8 @@ pub struct Args {
     #[structopt(long, group = "action")]
     pub debug_icon: Option<Icon>,
     /// Name of the icon theme
-    #[structopt(long, default_value = "default")]
-    pub icon_theme: String,
+    #[structopt(long)]
+    pub icon_theme: Option<Theme>,
 }
 
 impl Args {

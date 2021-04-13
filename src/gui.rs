@@ -1,9 +1,10 @@
-use crate::args::Args;
+use crate::config::Config;
 use crate::updater::{self, Status};
 use crate::errors::*;
 use crate::notify::{Event, setup_inotify_thread};
 use gtk::prelude::*;
 use libappindicator::{AppIndicator, AppIndicatorStatus};
+use serde::{de, Deserialize, Deserializer};
 use std::path::Path;
 use std::str::FromStr;
 use std::sync::mpsc;
@@ -43,18 +44,63 @@ impl FromStr for Icon {
     }
 }
 
+#[derive(Debug, Clone, PartialEq)]
+pub struct Theme {
+    s: String,
+}
+
+impl Theme {
+    fn as_str(&self) -> &str {
+        &self.s
+    }
+}
+
+impl Default for Theme {
+    fn default() -> Theme {
+        Theme {
+            s: "default".to_string()
+        }
+    }
+}
+
+impl<'de> Deserialize<'de> for Theme {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de>
+    {
+        let s = String::deserialize(deserializer)?;
+        FromStr::from_str(&s).map_err(de::Error::custom)
+    }
+}
+
+// Ensure the theme name can not be exploited for path traversal or
+// other havoc. After this point icon_theme is safe to be used within
+// a path.
+impl FromStr for Theme {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Result<Theme> {
+        if s.chars().all(|c| ('a'..='z').contains(&c)) {
+            Ok(Theme {
+                s: s.to_string(),
+            })
+        } else {
+            bail!("Theme contains invalid characters: {:?}", s);
+        }
+    }
+}
+
 struct TrayIcon {
     indicator: AppIndicator,
 }
 
 impl TrayIcon {
-    fn create(icon_theme: &str, icon: &Icon) -> Result<Self> {
+    fn create(icon_theme: &Theme, icon: &Icon) -> Self {
         let mut indicator = AppIndicator::new("arch-audit-gtk", "");
         indicator.set_status(AppIndicatorStatus::Active);
 
         'outer: for path in &["./icons", "/usr/share/arch-audit-gtk/icons"] {
-            for theme in &[icon_theme, "default"] {
-                if let Ok(theme_path) = Path::new(path).join(theme).canonicalize() {
+            for theme in &[icon_theme, &Theme::default()] {
+                if let Ok(theme_path) = Path::new(path).join(theme.as_str()).canonicalize() {
                     let icon = theme_path.join("check.svg");
                     if icon.exists() {
                         indicator.set_icon_theme_path(theme_path.to_str().unwrap());
@@ -66,7 +112,7 @@ impl TrayIcon {
 
         indicator.set_icon_full(icon.as_str(), "icon");
 
-        Ok(TrayIcon { indicator })
+        TrayIcon { indicator }
     }
 
     pub fn set_icon(&mut self, icon: &Icon) {
@@ -78,7 +124,7 @@ impl TrayIcon {
     }
 }
 
-pub fn main(args: Args) -> Result<()> {
+pub fn main(config: &Config,) -> Result<()> {
     gtk::init()?;
 
     // TODO: consider a mutex and condvar so we don't queue multiple updates
@@ -91,7 +137,7 @@ pub fn main(args: Args) -> Result<()> {
         updater::background(update_rx, result_tx);
     });
 
-    let mut tray_icon = TrayIcon::create(&args.icon_theme, &Icon::Check)?;
+    let mut tray_icon = TrayIcon::create(&config.icon_theme, &Icon::Check);
 
     let mut m = gtk::Menu::new();
 
@@ -155,10 +201,10 @@ pub fn main(args: Args) -> Result<()> {
     Ok(())
 }
 
-pub fn debug_icon(args: &Args, icon: &Icon) -> Result<()> {
+pub fn debug_icon(config: &Config, icon: &Icon) -> Result<()> {
     gtk::init()?;
 
-    let _tray_icon = TrayIcon::create(&args.icon_theme, icon)?;
+    let _tray_icon = TrayIcon::create(&config.icon_theme, icon);
 
     gtk::main();
 
