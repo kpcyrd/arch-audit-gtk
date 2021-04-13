@@ -19,6 +19,26 @@ For gnome3 you need to install an extension for app indicator support:
 
 After installing this extension you need to restart your desktop so gnome picks it up, you then need to enable the extension with the gnome extension manager.
 
+## Themes
+
+There are currently 3 themes that you may pick from:
+- `default`
+- `nocolor`
+- `classic`
+
+You can set this by creating a config file at one of the following locations:
+- `/etc/arch-audit/gui.toml`
+- `~/.config/arch-audit/gui.toml`
+
+With the following content:
+
+```toml
+[design]
+icon_theme = "nocolor"
+```
+
+You can also select a theme using the `--icon-theme <theme>` commandline option.
+
 ## Privacy
 
 Since this program is automatically pinging `security.archlinux.org` we attempt to use multiple techniques to increase privacy:
