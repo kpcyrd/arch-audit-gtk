@@ -119,8 +119,17 @@ impl TrayIcon {
         self.indicator.set_icon_full(icon.as_str(), "icon");
     }
 
-    pub fn set_menu(&mut self, m: &mut gtk::Menu) {
+    pub fn add_menu(&mut self, m: &mut gtk::Menu) {
+        // always append a quit item to the menu
+        let mi = gtk::MenuItem::with_label(QUIT);
+        m.append(&mi);
+        mi.connect_activate(|_| {
+            gtk::main_quit();
+        });
+
+        // set the menu
         self.indicator.set_menu(m);
+        m.show_all();
     }
 }
 
@@ -152,14 +161,7 @@ pub fn main(config: &Config,) -> Result<()> {
     let status_mi = gtk::MenuItem::with_label("Starting...");
     m.append(&status_mi);
 
-    let mi = gtk::MenuItem::with_label(QUIT);
-    m.append(&mi);
-    mi.connect_activate(|_| {
-        gtk::main_quit();
-    });
-
-    tray_icon.set_menu(&mut m);
-    m.show_all();
+    tray_icon.add_menu(&mut m);
 
     result_rx.attach(None, move |msg| {
         log::info!("Received from thread: {:?}", msg);
@@ -204,7 +206,10 @@ pub fn main(config: &Config,) -> Result<()> {
 pub fn debug_icon(config: &Config, icon: &Icon) -> Result<()> {
     gtk::init()?;
 
-    let _tray_icon = TrayIcon::create(&config.icon_theme, icon);
+    let mut tray_icon = TrayIcon::create(&config.icon_theme, icon);
+
+    let mut m = gtk::Menu::new();
+    tray_icon.add_menu(&mut m);
 
     gtk::main();
 
