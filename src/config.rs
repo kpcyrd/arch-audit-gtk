@@ -29,7 +29,7 @@ impl Config {
         }
 
         let mut config = Self {
-            icon_theme: merged.design.icon_theme.unwrap_or_else(Theme::default),
+            icon_theme: merged.design.icon_theme.unwrap_or_default(),
         };
 
         if let Some(icon_theme) = &args.icon_theme {

@@ -13,7 +13,13 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Install dependencies
-      run: sudo apt-get install libpango1.0-dev libatk1.0-dev libgtk-3-dev libappindicator3-dev
+      run: sudo apt-get install libpango1.0-dev libatk1.0-dev libgtk-3-dev libappindicator3-dev meson libarchive-dev
+    - name: Clone pacman.git
+      run: git clone --depth=1 https://gitlab.archlinux.org/pacman/pacman.git
+    - name: Prepare libalpm compile
+      run: meson pacman/build/ pacman/
+    - name: Install libalpm
+      run: sudo ninja -C pacman/build/ install
     - name: Build
       run: cargo build --verbose
     - name: Run tests
@@ -31,7 +37,13 @@ jobs:
         override: true
         components: clippy
     - name: Install dependencies
-      run: sudo apt-get install libpango1.0-dev libatk1.0-dev libgtk-3-dev libappindicator3-dev
+      run: sudo apt-get install libpango1.0-dev libatk1.0-dev libgtk-3-dev libappindicator3-dev meson libarchive-dev
+    - name: Clone pacman.git
+      run: git clone --depth=1 https://gitlab.archlinux.org/pacman/pacman.git
+    - name: Prepare libalpm compile
+      run: meson pacman/build/ pacman/
+    - name: Install libalpm
+      run: sudo ninja -C pacman/build/ install
     - uses: actions-rs/cargo@v1
       with:
         command: clippy

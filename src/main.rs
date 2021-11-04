@@ -25,7 +25,7 @@ fn main() -> Result<()> {
     } else if args.debug_inotify {
         notify::debug_inotify()
     } else if let Some(icon) = &args.debug_icon {
-        gui::debug_icon(&config, &icon)
+        gui::debug_icon(&config, icon)
     } else {
         gui::main(&config)
     }
