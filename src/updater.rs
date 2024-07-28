@@ -1,7 +1,7 @@
-use arch_audit::types::{Avg, Severity};
 use crate::errors::*;
 use crate::gui::Icon;
 use crate::notify::Event;
+use arch_audit::types::{Avg, Severity};
 use rand::Rng;
 use std::borrow::Cow;
 use std::env;
@@ -28,7 +28,7 @@ impl Status {
                 1 => Cow::Borrowed("1 missing security update"),
                 n => Cow::Owned(format!("{} missing security updates", n)),
             },
-            Status::Error(err) => Cow::Owned(format!("ERROR: {}", err))
+            Status::Error(err) => Cow::Owned(format!("ERROR: {}", err)),
         }
     }
 
@@ -57,13 +57,11 @@ pub struct Update {
 pub fn check_for_updates() -> Result<Vec<Update>> {
     // Select the arch-audit binary
     let bin = env::var("ARCH_AUDIT_BIN");
-    let bin = bin.as_ref()
-        .map(|x| x.as_str())
-        .unwrap_or("arch-audit");
+    let bin = bin.as_ref().map(|x| x.as_str()).unwrap_or("arch-audit");
 
     // Run the arch-audit binary
     let output = Command::new(bin)
-        .args(&["-u", "--json"])
+        .args(["-u", "--json"])
         .output()
         .context("Failed to run arch-audit")?;
 
@@ -74,23 +72,29 @@ pub fn check_for_updates() -> Result<Vec<Update>> {
         let affected: Vec<Avg> = serde_json::from_slice(&output.stdout)
             .context("Failed to parse arch-audit json output")?;
 
-        let mut updates = affected.into_iter()
+        let mut updates = affected
+            .into_iter()
             .flat_map(|avg| {
-                avg.packages.iter().map(|pkg| {
-                    let text = format!("{}: {} ({})", avg.severity, pkg, avg.kind);
-                    Update {
-                        severity: avg.severity,
-                        pkg: pkg.to_string(),
-                        text,
-                        link: format!("https://security.archlinux.org/{}", avg.name),
-                    }
-                }).collect::<Vec<_>>()
+                avg.packages
+                    .iter()
+                    .map(|pkg| {
+                        let text = format!("{}: {} ({})", avg.severity, pkg, avg.kind);
+                        Update {
+                            severity: avg.severity,
+                            pkg: pkg.to_string(),
+                            text,
+                            link: format!("https://security.archlinux.org/{}", avg.name),
+                        }
+                    })
+                    .collect::<Vec<_>>()
             })
             .collect::<Vec<_>>();
 
         updates.sort_by(|a, b| {
-            a.severity.cmp(&b.severity).reverse()
-            .then(a.pkg.cmp(&b.pkg))
+            a.severity
+                .cmp(&b.severity)
+                .reverse()
+                .then(a.pkg.cmp(&b.pkg))
         });
 
         if !updates.is_empty() {
@@ -133,7 +137,7 @@ pub fn background(update_rx: mpsc::Receiver<Event>, result_tx: glib::Sender<Stat
                         } else {
                             info!("There are no missing security updates so we aren't checking if we're missing any");
                         }
-                    },
+                    }
                 }
             } else {
                 break;

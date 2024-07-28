@@ -1,7 +1,7 @@
 use crate::config::Config;
-use crate::updater::{self, Status};
 use crate::errors::*;
-use crate::notify::{Event, setup_inotify_thread};
+use crate::notify::{setup_inotify_thread, Event};
+use crate::updater::{self, Status};
 use gtk::prelude::*;
 use libappindicator::{AppIndicator, AppIndicatorStatus};
 use serde::{de, Deserialize, Deserializer};
@@ -58,14 +58,15 @@ impl Theme {
 impl Default for Theme {
     fn default() -> Theme {
         Theme {
-            s: "default".to_string()
+            s: "default".to_string(),
         }
     }
 }
 
 impl<'de> Deserialize<'de> for Theme {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
+    where
+        D: Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
         FromStr::from_str(&s).map_err(de::Error::custom)
@@ -79,10 +80,8 @@ impl FromStr for Theme {
     type Err = Error;
 
     fn from_str(s: &str) -> Result<Theme> {
-        if s.chars().all(|c| ('a'..='z').contains(&c)) {
-            Ok(Theme {
-                s: s.to_string(),
-            })
+        if s.chars().all(|c| c.is_ascii_lowercase()) {
+            Ok(Theme { s: s.to_string() })
         } else {
             bail!("Theme contains invalid characters: {:?}", s);
         }
@@ -133,7 +132,7 @@ impl TrayIcon {
     }
 }
 
-pub fn main(config: &Config,) -> Result<()> {
+pub fn main(config: &Config) -> Result<()> {
     gtk::init()?;
 
     // TODO: consider a mutex and condvar so we don't queue multiple updates
@@ -187,7 +186,7 @@ pub fn main(config: &Config,) -> Result<()> {
 
                 m.show_all();
                 status_mi.set_submenu(Some(&m));
-            },
+            }
             _ => {
                 status_mi.set_submenu(None::<&gtk::Menu>);
             }

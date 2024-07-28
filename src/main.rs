@@ -14,11 +14,9 @@ use structopt::StructOpt;
 fn main() -> Result<()> {
     let args = Args::from_args();
 
-    env_logger::init_from_env(Env::default()
-        .default_filter_or(args.log_level()));
+    env_logger::init_from_env(Env::default().default_filter_or(args.log_level()));
 
-    let config = Config::load(&args)
-        .context("Failed to load config")?;
+    let config = Config::load(&args).context("Failed to load config")?;
 
     if args.pacman_notify {
         notify::pacman_notify()

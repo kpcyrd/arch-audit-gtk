@@ -6,8 +6,6 @@ Target = *
 
 [Action]
 Description = Notifying arch-audit-gtk
-Depends = curl
-Depends = openssl
 Depends = arch-audit
 Depends = arch-audit-gtk
 When = PostTransaction

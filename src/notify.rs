@@ -12,21 +12,17 @@ pub enum Event {
 
 pub fn pacman_notify() -> Result<()> {
     let path = "/run/arch-audit-gtk/notify";
-    File::create(path)
-        .with_context(|| anyhow!("Failed to touch file: {:?}", path))?;
+    File::create(path).with_context(|| anyhow!("Failed to touch file: {:?}", path))?;
     Ok(())
 }
 
 pub fn setup_inotify_thread(tx: mpsc::Sender<Event>) -> Result<()> {
-    let mut inotify = Inotify::init()
-        .context("Failed to init inotify")?;
+    let mut inotify = Inotify::init().context("Failed to init inotify")?;
 
     // Watch for modify and close events.
     let result = inotify
-        .add_watch(
-            "/run/arch-audit-gtk",
-            WatchMask::CLOSE_WRITE,
-        );
+        .watches()
+        .add("/run/arch-audit-gtk", WatchMask::CLOSE_WRITE);
 
     if let Err(err) = result {
         warn!("Failed to add file watch: {:#}", err);
@@ -36,7 +32,8 @@ pub fn setup_inotify_thread(tx: mpsc::Sender<Event>) -> Result<()> {
             let mut buffer = [0; 1024];
 
             loop {
-                let events = inotify.read_events_blocking(&mut buffer)
+                let events = inotify
+                    .read_events_blocking(&mut buffer)
                     .expect("Error while reading events");
 
                 // we don't need to send multiple signals, one is enough
