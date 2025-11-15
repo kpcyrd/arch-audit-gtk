@@ -1,0 +1,3 @@
+[submodule "third_party/arch-audit"]
+	path = third_party/arch-audit
+	url = https://gitlab.archlinux.org/archlinux/arch-audit.git

@@ -26,3 +26,8 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1.0.64"
 structopt = "0.3.21"
 toml = "0.8"
+
+[patch.crates-io]
+# arch-audit must use alpm.rs v4.0 for building against libalpm v15.x (from
+# pacman 7.0.0). Upstream hasn't bumped yet, so for now we use a local patch.
+arch-audit = { path = "third_party/arch-audit" }
