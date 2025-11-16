@@ -23,10 +23,11 @@ pub enum Icon {
 
 impl Icon {
     fn as_str(&self) -> &'static str {
+        // This will simply fall back to the non-symbolic variants.
         match self {
-            Self::Check => "check",
-            Self::Alert => "alert",
-            Self::Cross => "cross",
+            Self::Check => "check-symbolic",
+            Self::Alert => "alert-symbolic",
+            Self::Cross => "cross-symbolic",
         }
     }
 }
@@ -101,7 +102,8 @@ impl TrayIcon {
             for theme in &[icon_theme, &Theme::default()] {
                 if let Ok(theme_path) = Path::new(path).join(theme.as_str()).canonicalize() {
                     let icon = theme_path.join("check.svg");
-                    if icon.exists() {
+                    let icon_symbolic = theme_path.join("check-symbolic.svg");
+                    if icon.exists() || icon_symbolic.exists() {
                         indicator.set_icon_theme_path(theme_path.to_str().unwrap());
                         break 'outer;
                     }

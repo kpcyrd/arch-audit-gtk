@@ -21,9 +21,10 @@ After installing this extension you need to restart your desktop so gnome picks 
 
 ## Themes
 
-There are currently 3 themes that you may pick from:
+There are currently four themes that you may pick from:
 - `default`
 - `nocolor`
+- `symbolic`
 - `classic`
 
 You can set this by creating a config file at one of the following locations:
